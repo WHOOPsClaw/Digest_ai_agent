@@ -1,4 +1,4 @@
-FROM python:3.11-slim
+FROM python:3.14-slim
 
 LABEL org.opencontainers.image.source="https://github.com/newsbrief/newsbrief"
 LABEL org.opencontainers.image.description="Self-hosted AI news digest for Telegram"
