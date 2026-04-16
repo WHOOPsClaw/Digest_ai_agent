@@ -1,0 +1,73 @@
+# Example: Science fan
+# Nature, Science, popular science, space, climate.
+# LLM: Gemini (free tier, grounded search for discovery).
+
+user:
+  name: Scientist
+  language: en
+  timezone: Europe/London
+  profile: |
+    I love science — especially space, biology, climate, and materials.
+    I want primary papers and thoughtful popular-science writing.
+    Skip "scientists HATE this one trick" pop pieces and wellness woo.
+
+schedule:
+  send_at: "08:00"
+  timezone: Europe/London
+
+llm:
+  preset: gemini
+  api_key_env: GEMINI_API_KEY
+
+delivery:
+  telegram:
+    bot_token_env: TELEGRAM_BOT_TOKEN
+    chat_id: 123456789
+
+format:
+  items_per_topic: 5
+  card_style: full
+  blockquote_why: true
+
+topics:
+  - id: space
+    name: "Space"
+    emoji: "🚀"
+    items_per_digest: 4
+    sources:
+      rss:
+        - https://www.nasa.gov/news-release/feed/
+        - https://spacenews.com/feed/
+      telegram: [spacenews_ru]
+
+  - id: biology
+    name: "Biology & medicine"
+    emoji: "🧬"
+    items_per_digest: 4
+    blacklist: ["wellness", "detox", "miracle cure"]
+    sources:
+      rss:
+        - https://www.nature.com/nature.rss
+        - https://www.science.org/rss/news_current.xml
+        - https://www.statnews.com/feed/
+
+  - id: climate
+    name: "Climate & environment"
+    emoji: "🌱"
+    items_per_digest: 3
+    sources:
+      rss:
+        - https://www.carbonbrief.org/feed/
+        - https://insideclimatenews.org/feed/
+
+  - id: popsci
+    name: "Popular science"
+    emoji: "🔭"
+    items_per_digest: 4
+    sources:
+      rss:
+        - https://www.quantamagazine.org/feed/
+        - https://arstechnica.com/science/feed/
+      youtube:
+        - UC6nSFpj9HTCZ5t-N3Rm3-HA     # Veritasium
+        - UCHnyfMqiRRG1u-2MsSQLbXA     # Veritasium alt / Kurzgesagt-style

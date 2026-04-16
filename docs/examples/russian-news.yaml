@@ -1,0 +1,73 @@
+# Пример: русскоязычный дайджест
+# Москва + мир + технологии. LLM — Gemini (бесплатный тариф).
+
+user:
+  name: Илья
+  language: ru
+  timezone: Europe/Moscow
+  profile: |
+    Живу в Москве, интересуюсь мировой политикой, технологиями, наукой.
+    Не нужны светские новости, реклама и пресс-релизы без фактуры.
+    Предпочитаю первоисточники и аналитику.
+
+schedule:
+  send_at: "09:00"
+  timezone: Europe/Moscow
+  weekend:
+    send_at: "10:30"
+
+llm:
+  preset: gemini
+  api_key_env: GEMINI_API_KEY
+
+delivery:
+  telegram:
+    bot_token_env: TELEGRAM_BOT_TOKEN
+    chat_id: 123456789
+
+format:
+  items_per_topic: 5
+  card_style: compact
+  blockquote_why: true
+  show_source_domain: true
+
+prompts:
+  synthesis: |
+    Ты пишешь личный утренний дайджест. Обращайся на «ты».
+    Короткие фразы, конкретные цифры, никакого канцелярита.
+    В конце каждой карточки — одна строка «зачем читать».
+
+topics:
+  - id: world
+    name: "Мир"
+    emoji: "🌍"
+    items_per_digest: 5
+    sources:
+      telegram: [bbbreaking, rt_russian, meduzalive]
+      rss:
+        - https://meduza.io/rss2/all
+
+  - id: tech
+    name: "Технологии"
+    emoji: "⚙️"
+    items_per_digest: 4
+    blacklist: ["крипта", "NFT"]
+    sources:
+      telegram: [addmeto, denissexy, zabugor]
+      hackernews: [top]
+
+  - id: science
+    name: "Наука"
+    emoji: "🔬"
+    items_per_digest: 3
+    sources:
+      telegram: [nplusone_ru, elementy_org]
+      rss:
+        - https://nplus1.ru/rss
+
+  - id: msk
+    name: "Москва"
+    emoji: "🏙"
+    items_per_digest: 3
+    sources:
+      telegram: [dumayem, mash]

@@ -1,0 +1,86 @@
+# Example: AI/ML researcher
+# Deep technical focus: papers, open-weights releases, systems work.
+# LLM: Groq free tier.
+
+user:
+  name: Researcher
+  language: en
+  timezone: America/Los_Angeles
+  profile: |
+    I work on ML systems and LLM inference. I care about open-weights releases,
+    new benchmarks, training techniques, and systems-level tricks (quantisation,
+    serving, kernels). Skip VC news and AI ethics hot-takes unless they have data.
+
+schedule:
+  send_at: "07:30"
+  timezone: America/Los_Angeles
+
+llm:
+  preset: groq
+  api_key_env: GROQ_API_KEY
+  routing:
+    synthesis: groq
+    filter: groq
+    discovery: gemini
+  providers:
+    gemini:
+      preset: gemini
+      api_key_env: GEMINI_API_KEY
+
+delivery:
+  telegram:
+    bot_token_env: TELEGRAM_BOT_TOKEN
+    chat_id: 123456789
+
+format:
+  items_per_topic: 6
+  card_style: full
+  blockquote_why: true
+
+topics:
+  - id: papers
+    name: "Papers & research"
+    emoji: "📄"
+    items_per_digest: 5
+    interests_boost: ["benchmark", "ablation", "open-weights", "training recipe"]
+    blacklist: ["ethics panel", "AI doom"]
+    sources:
+      rss:
+        - https://simonwillison.net/atom/everything/
+        - https://jack-clark.net/feed/
+        - https://www.interconnects.ai/feed
+      search:
+        - "new LLM paper arxiv this week"
+        - "open-weights model release"
+
+  - id: systems
+    name: "ML systems"
+    emoji: "🧠"
+    items_per_digest: 4
+    interests_boost: ["inference", "quantisation", "kernel", "serving", "vLLM", "SGLang"]
+    sources:
+      rss:
+        - https://horace.io/brrr_intro.html/feed
+      reddit: [LocalLLaMA, MachineLearning]
+      hackernews:
+        - name: top
+          min_score: 80
+
+  - id: industry
+    name: "AI industry"
+    emoji: "🏢"
+    items_per_digest: 3
+    blacklist: ["crypto AI", "AGI announcement"]
+    sources:
+      rss:
+        - https://www.semianalysis.com/feed
+      telegram: [ai_newz, gonzo_ml]
+
+  - id: hn_signal
+    name: "HN signal"
+    emoji: "📰"
+    items_per_digest: 3
+    sources:
+      hackernews:
+        - name: top
+          min_score: 200

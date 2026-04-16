@@ -1,0 +1,40 @@
+{
+  "kind": "Listing",
+  "data": {
+    "children": [
+      {
+        "kind": "t3",
+        "data": {
+          "title": "High score post",
+          "url": "https://example.com/high",
+          "permalink": "/r/test/comments/abc/high/",
+          "selftext": "Body text here.",
+          "score": 250,
+          "created_utc": 1712000000
+        }
+      },
+      {
+        "kind": "t3",
+        "data": {
+          "title": "Low score post",
+          "url": "https://example.com/low",
+          "permalink": "/r/test/comments/xyz/low/",
+          "selftext": "",
+          "score": 5,
+          "created_utc": 1712000100
+        }
+      },
+      {
+        "kind": "t3",
+        "data": {
+          "title": "Another good post",
+          "url": "https://example.com/good",
+          "permalink": "/r/test/comments/def/good/",
+          "selftext": "Self text.",
+          "score": 120,
+          "created_utc": 1712000200
+        }
+      }
+    ]
+  }
+}

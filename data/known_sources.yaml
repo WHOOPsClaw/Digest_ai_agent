@@ -1,0 +1,520 @@
+topics:
+  ai_ml:
+    display_name: "AI / Machine Learning"
+    emoji: "🤖"
+    keywords: ["ai", "artificial intelligence", "machine learning", "ml", "llm", "neural", "gpt", "claude", "coding agents", "deep learning", "нейросеть", "ии", "искусственный интеллект"]
+    sources:
+      - type: rss
+        url: "https://simonwillison.net/atom/everything/"
+        name: "Simon Willison's Weblog"
+        language: en
+        quality: high
+        description: "Deep dives on LLM tooling and coding agents"
+        tags: [llm, tooling, analysis]
+        recommended: true
+      - type: rss
+        url: "https://huggingface.co/blog/feed.xml"
+        name: "HuggingFace Blog"
+        language: en
+        quality: high
+        description: "Official HF model/dataset announcements"
+        tags: [models, open-source]
+        recommended: true
+      - type: rss
+        url: "https://openai.com/blog/rss.xml"
+        name: "OpenAI Blog"
+        language: en
+        quality: high
+        tags: [openai, models]
+        recommended: true
+      - type: rss
+        url: "https://www.anthropic.com/rss.xml"
+        name: "Anthropic News"
+        language: en
+        quality: high
+        tags: [anthropic, claude]
+        recommended: true
+      - type: rss
+        url: "https://blog.google/technology/ai/rss/"
+        name: "Google AI Blog"
+        language: en
+        quality: high
+        tags: [google, research]
+      - type: rss
+        url: "https://bair.berkeley.edu/blog/feed.xml"
+        name: "Berkeley AI Research"
+        language: en
+        quality: high
+        tags: [research, academia]
+      - type: rss
+        url: "https://magazine.sebastianraschka.com/feed"
+        name: "Sebastian Raschka"
+        language: en
+        quality: high
+        tags: [llm, research]
+      - type: reddit
+        config: {sub: "LocalLLaMA", min_score: 50}
+        name: "r/LocalLLaMA"
+        language: en
+        quality: high
+        description: "Community for running LLMs locally"
+        tags: [local, community]
+        recommended: true
+      - type: reddit
+        config: {sub: "MachineLearning", min_score: 100}
+        name: "r/MachineLearning"
+        language: en
+        quality: medium
+        tags: [research, community]
+      - type: reddit
+        config: {sub: "singularity", min_score: 200}
+        name: "r/singularity"
+        language: en
+        quality: medium
+        tags: [community]
+      - type: hackernews
+        config: {type: top, min_score: 100}
+        name: "HackerNews top"
+        language: en
+        quality: high
+        tags: [community]
+        recommended: true
+      - type: telegram
+        config: {username: "neuraldvig"}
+        name: "Neural Дайджест"
+        language: ru
+        quality: medium
+        description: "Русскоязычный AI-канал"
+        tags: [russian]
+      - type: telegram
+        config: {username: "seeallochnaya"}
+        name: "Сиолошная"
+        language: ru
+        quality: high
+        tags: [russian, analysis]
+      - type: telegram
+        config: {username: "denissexy"}
+        name: "Denis Sexy IT"
+        language: ru
+        quality: medium
+        tags: [russian]
+
+  tech:
+    display_name: "Technology / Startups"
+    emoji: "💻"
+    keywords: ["technology", "tech", "startup", "silicon valley", "saas", "технологии", "стартап"]
+    sources:
+      - type: rss
+        url: "https://techcrunch.com/feed/"
+        name: "TechCrunch"
+        language: en
+        quality: high
+        tags: [startups, news]
+        recommended: true
+      - type: rss
+        url: "https://www.theverge.com/rss/index.xml"
+        name: "The Verge"
+        language: en
+        quality: high
+        tags: [consumer, news]
+        recommended: true
+      - type: rss
+        url: "https://www.wired.com/feed/rss"
+        name: "Wired"
+        language: en
+        quality: high
+        tags: [analysis]
+      - type: rss
+        url: "https://feeds.arstechnica.com/arstechnica/index"
+        name: "Ars Technica"
+        language: en
+        quality: high
+        tags: [deep-dive]
+        recommended: true
+      - type: rss
+        url: "https://www.engadget.com/rss.xml"
+        name: "Engadget"
+        language: en
+        quality: medium
+        tags: [consumer]
+      - type: rss
+        url: "https://www.theregister.com/headlines.atom"
+        name: "The Register"
+        language: en
+        quality: medium
+        tags: [enterprise]
+      - type: rss
+        url: "https://techstartups.com/feed/"
+        name: "Tech Startups"
+        language: en
+        quality: medium
+      - type: hackernews
+        config: {type: top, min_score: 150}
+        name: "HackerNews"
+        language: en
+        quality: high
+        tags: [community]
+        recommended: true
+      - type: reddit
+        config: {sub: "technology", min_score: 500}
+        name: "r/technology"
+        language: en
+        quality: medium
+
+  world_news:
+    display_name: "World News"
+    emoji: "🌍"
+    keywords: ["world", "global", "international", "politics", "news", "мировые новости", "политика"]
+    sources:
+      - type: rss
+        url: "https://feeds.bbci.co.uk/news/world/rss.xml"
+        name: "BBC World"
+        language: en
+        quality: high
+        recommended: true
+      - type: rss
+        url: "https://www.theguardian.com/world/rss"
+        name: "The Guardian World"
+        language: en
+        quality: high
+        recommended: true
+      - type: rss
+        url: "https://www.aljazeera.com/xml/rss/all.xml"
+        name: "Al Jazeera"
+        language: en
+        quality: high
+      - type: rss
+        url: "https://rss.nytimes.com/services/xml/rss/nyt/World.xml"
+        name: "NYT World"
+        language: en
+        quality: high
+        recommended: true
+      - type: rss
+        url: "https://feeds.reuters.com/reuters/worldNews"
+        name: "Reuters World"
+        language: en
+        quality: high
+      - type: rss
+        url: "https://feeds.washingtonpost.com/rss/world"
+        name: "Washington Post World"
+        language: en
+        quality: high
+      - type: rss
+        url: "https://www.economist.com/international/rss.xml"
+        name: "The Economist International"
+        language: en
+        quality: high
+        recommended: true
+      - type: rss
+        url: "https://apnews.com/rss"
+        name: "AP News"
+        language: en
+        quality: high
+
+  russia:
+    display_name: "Россия / Russia"
+    emoji: "🇷🇺"
+    keywords: ["россия", "russia", "русский", "московский", "moscow", "кремль", "путин"]
+    sources:
+      - type: rss
+        url: "https://meduza.io/rss/all"
+        name: "Meduza"
+        language: ru
+        quality: high
+        recommended: true
+      - type: rss
+        url: "https://rssexport.rbc.ru/rbcnews/news/30/full.rss"
+        name: "RBC"
+        language: ru
+        quality: high
+        recommended: true
+      - type: rss
+        url: "https://lenta.ru/rss"
+        name: "Lenta.ru"
+        language: ru
+        quality: medium
+      - type: rss
+        url: "https://tass.ru/rss/v2.xml"
+        name: "TASS"
+        language: ru
+        quality: medium
+      - type: rss
+        url: "https://www.kommersant.ru/RSS/news.xml"
+        name: "Kommersant"
+        language: ru
+        quality: high
+        recommended: true
+      - type: rss
+        url: "https://www.vedomosti.ru/rss/news.xml"
+        name: "Vedomosti"
+        language: ru
+        quality: high
+      - type: telegram
+        config: {username: "varlamov_news"}
+        name: "Варламов News"
+        language: ru
+        quality: medium
+        recommended: true
+      - type: telegram
+        config: {username: "meduzalive"}
+        name: "Meduza — LIVE"
+        language: ru
+        quality: high
+      - type: telegram
+        config: {username: "bbbreaking"}
+        name: "Раньше всех. Ну почти."
+        language: ru
+        quality: medium
+      - type: telegram
+        config: {username: "mash"}
+        name: "Mash"
+        language: ru
+        quality: medium
+
+  gaming:
+    display_name: "Gaming / Video Games"
+    emoji: "🎮"
+    keywords: ["games", "gaming", "video games", "gamedev", "игры", "геймдев"]
+    sources:
+      - type: rss
+        url: "https://feeds.ign.com/ign/all"
+        name: "IGN"
+        language: en
+        quality: high
+        recommended: true
+      - type: rss
+        url: "https://kotaku.com/rss"
+        name: "Kotaku"
+        language: en
+        quality: medium
+      - type: rss
+        url: "https://www.gamespot.com/feeds/news/"
+        name: "GameSpot"
+        language: en
+        quality: medium
+      - type: rss
+        url: "https://www.rockpapershotgun.com/feed"
+        name: "Rock Paper Shotgun"
+        language: en
+        quality: high
+        recommended: true
+      - type: rss
+        url: "https://www.pcgamer.com/rss/"
+        name: "PC Gamer"
+        language: en
+        quality: medium
+      - type: rss
+        url: "https://www.polygon.com/rss/index.xml"
+        name: "Polygon"
+        language: en
+        quality: high
+        recommended: true
+      - type: reddit
+        config: {sub: "Games", min_score: 200}
+        name: "r/Games"
+        language: en
+        quality: medium
+      - type: reddit
+        config: {sub: "pcgaming", min_score: 300}
+        name: "r/pcgaming"
+        language: en
+        quality: medium
+      - type: telegram
+        config: {username: "DTF"}
+        name: "DTF"
+        language: ru
+        quality: medium
+
+  science:
+    display_name: "Science"
+    emoji: "🔬"
+    keywords: ["science", "research", "physics", "biology", "наука", "исследования"]
+    sources:
+      - type: rss
+        url: "https://www.science.org/rss/news_current.xml"
+        name: "Science Magazine"
+        language: en
+        quality: high
+        recommended: true
+      - type: rss
+        url: "https://www.nature.com/nature.rss"
+        name: "Nature"
+        language: en
+        quality: high
+        recommended: true
+      - type: rss
+        url: "https://www.quantamagazine.org/feed/"
+        name: "Quanta Magazine"
+        language: en
+        quality: high
+        recommended: true
+      - type: rss
+        url: "https://www.scientificamerican.com/feed/"
+        name: "Scientific American"
+        language: en
+        quality: high
+      - type: rss
+        url: "https://phys.org/rss-feed/"
+        name: "Phys.org"
+        language: en
+        quality: medium
+      - type: rss
+        url: "https://www.newscientist.com/feed/home/"
+        name: "New Scientist"
+        language: en
+        quality: high
+      - type: reddit
+        config: {sub: "science", min_score: 500}
+        name: "r/science"
+        language: en
+        quality: medium
+
+  business:
+    display_name: "Business / Finance"
+    emoji: "💼"
+    keywords: ["business", "finance", "stocks", "economy", "бизнес", "финансы", "экономика"]
+    sources:
+      - type: rss
+        url: "https://feeds.bloomberg.com/markets/news.rss"
+        name: "Bloomberg Markets"
+        language: en
+        quality: high
+        recommended: true
+      - type: rss
+        url: "https://www.ft.com/rss/home"
+        name: "Financial Times"
+        language: en
+        quality: high
+        recommended: true
+      - type: rss
+        url: "https://feeds.a.dj.com/rss/RSSWSJD.xml"
+        name: "WSJ Tech"
+        language: en
+        quality: high
+      - type: rss
+        url: "https://www.economist.com/finance-and-economics/rss.xml"
+        name: "Economist Finance"
+        language: en
+        quality: high
+        recommended: true
+      - type: rss
+        url: "https://hbr.org/the-latest/feed"
+        name: "Harvard Business Review"
+        language: en
+        quality: high
+      - type: rss
+        url: "https://www.cnbc.com/id/100003114/device/rss/rss.html"
+        name: "CNBC Top News"
+        language: en
+        quality: medium
+      - type: reddit
+        config: {sub: "stocks", min_score: 200}
+        name: "r/stocks"
+        language: en
+        quality: medium
+      - type: reddit
+        config: {sub: "investing", min_score: 200}
+        name: "r/investing"
+        language: en
+        quality: medium
+
+  programming:
+    display_name: "Programming / Dev"
+    emoji: "👨‍💻"
+    keywords: ["programming", "software", "developer", "coding", "code", "программирование", "разработка"]
+    sources:
+      - type: hackernews
+        config: {type: top, min_score: 100}
+        name: "HackerNews top"
+        language: en
+        quality: high
+        recommended: true
+      - type: rss
+        url: "https://blog.rust-lang.org/feed.xml"
+        name: "Rust Blog"
+        language: en
+        quality: high
+        tags: [rust]
+      - type: rss
+        url: "https://go.dev/blog/feed.atom"
+        name: "Go Blog"
+        language: en
+        quality: high
+        tags: [golang]
+      - type: rss
+        url: "https://devblogs.microsoft.com/feed/"
+        name: "Microsoft Dev Blogs"
+        language: en
+        quality: medium
+      - type: rss
+        url: "https://github.blog/feed/"
+        name: "GitHub Blog"
+        language: en
+        quality: high
+        recommended: true
+      - type: rss
+        url: "https://stackoverflow.blog/feed/"
+        name: "Stack Overflow Blog"
+        language: en
+        quality: medium
+      - type: rss
+        url: "https://martinfowler.com/feed.atom"
+        name: "Martin Fowler"
+        language: en
+        quality: high
+        recommended: true
+      - type: rss
+        url: "https://lwn.net/headlines/rss"
+        name: "LWN.net"
+        language: en
+        quality: high
+        tags: [linux]
+      - type: reddit
+        config: {sub: "programming", min_score: 300}
+        name: "r/programming"
+        language: en
+        quality: medium
+      - type: reddit
+        config: {sub: "webdev", min_score: 200}
+        name: "r/webdev"
+        language: en
+        quality: medium
+
+  security:
+    display_name: "Security / InfoSec"
+    emoji: "🔐"
+    keywords: ["security", "cybersecurity", "infosec", "hacking", "vulnerability", "безопасность", "кибербез"]
+    sources:
+      - type: rss
+        url: "https://krebsonsecurity.com/feed/"
+        name: "Krebs on Security"
+        language: en
+        quality: high
+        recommended: true
+      - type: rss
+        url: "https://www.schneier.com/feed/atom/"
+        name: "Schneier on Security"
+        language: en
+        quality: high
+        recommended: true
+      - type: rss
+        url: "https://www.bleepingcomputer.com/feed/"
+        name: "BleepingComputer"
+        language: en
+        quality: high
+        recommended: true
+      - type: rss
+        url: "https://thehackernews.com/feeds/posts/default"
+        name: "The Hacker News"
+        language: en
+        quality: medium
+      - type: rss
+        url: "https://www.darkreading.com/rss.xml"
+        name: "Dark Reading"
+        language: en
+        quality: medium
+      - type: reddit
+        config: {sub: "netsec", min_score: 100}
+        name: "r/netsec"
+        language: en
+        quality: high

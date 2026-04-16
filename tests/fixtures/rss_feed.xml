@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<rss version="2.0">
+  <channel>
+    <title>Test Feed</title>
+    <link>https://example.com/</link>
+    <description>A sample test feed</description>
+    <item>
+      <title>First Headline</title>
+      <link>https://example.com/first</link>
+      <description>&lt;p&gt;Snippet one.&lt;/p&gt;</description>
+      <pubDate>Tue, 01 Apr 2025 12:00:00 GMT</pubDate>
+    </item>
+    <item>
+      <title>Second Headline</title>
+      <link>https://example.com/second</link>
+      <description>Snippet two without tags.</description>
+      <pubDate>Wed, 02 Apr 2025 09:30:00 GMT</pubDate>
+    </item>
+  </channel>
+</rss>
