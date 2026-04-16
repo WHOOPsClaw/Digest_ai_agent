@@ -1,0 +1,79 @@
+# Example: Gaming enthusiast
+# AAA + indie + Russian gaming scene + release radar.
+# LLM: Groq free tier.
+
+user:
+  name: Gamer
+  language: en
+  timezone: Europe/Berlin
+  profile: |
+    I play PC games — mostly RPGs, roguelikes, strategy. I want release news,
+    honest reviews, and indie discoveries. Not interested in mobile gacha,
+    esports drama, or "top 10" clickbait.
+
+schedule:
+  send_at: "19:00"
+  timezone: Europe/Berlin
+
+llm:
+  preset: groq
+  api_key_env: GROQ_API_KEY
+
+delivery:
+  telegram:
+    bot_token_env: TELEGRAM_BOT_TOKEN
+    chat_id: 123456789
+
+format:
+  items_per_topic: 6
+  card_style: compact
+  blockquote_why: true
+
+topics:
+  - id: aaa
+    name: "AAA & big releases"
+    emoji: "🎮"
+    items_per_digest: 5
+    blacklist: ["mobile gacha", "top 10 of", "tier list"]
+    sources:
+      rss:
+        - https://www.rockpapershotgun.com/feed
+        - https://www.eurogamer.net/feed
+      reddit:
+        - name: Games
+          sort: top
+          window: day
+          min_score: 500
+
+  - id: indie
+    name: "Indie spotlight"
+    emoji: "🕹"
+    items_per_digest: 5
+    interests_boost: ["roguelike", "deckbuilder", "CRPG", "metroidvania"]
+    sources:
+      rss:
+        - https://www.indiedb.com/headlines/feed/rss.xml
+      reddit:
+        - name: indiegames
+          sort: top
+          window: week
+          min_score: 100
+      search:
+        - "best indie game release this week"
+
+  - id: ru_gaming
+    name: "RU scene"
+    emoji: "🇷🇺"
+    items_per_digest: 3
+    sources:
+      telegram: [dtf_games, kanobu]
+
+  - id: releases
+    name: "Release radar"
+    emoji: "📅"
+    items_per_digest: 4
+    sources:
+      rss:
+        - https://store.steampowered.com/feeds/news.xml
+      search:
+        - "Steam upcoming release this week"

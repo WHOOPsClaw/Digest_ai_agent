@@ -1,0 +1,19 @@
+services:
+  newsbrief:
+    build: .
+    container_name: newsbrief
+    restart: unless-stopped
+    env_file:
+      - .env
+    volumes:
+      - ./data:/app/data
+      - ./config.yaml:/app/config.yaml
+      - ./plugins:/app/plugins
+    ports:
+      - "127.0.0.1:8080:8080"  # for Telegram webhook callbacks
+    mem_limit: 512m
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"

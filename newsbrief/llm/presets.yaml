@@ -1,0 +1,74 @@
+groq:
+  name: "Groq (FREE, Llama 3.3 70B)"
+  provider: openai_compatible
+  base_url: "https://api.groq.com/openai/v1"
+  free_tier: "14,400 requests/day, no credit card"
+  default: true
+  api_key_url: "https://console.groq.com/keys"
+  models:
+    - {id: "llama-3.3-70b-versatile", name: "Llama 3.3 70B", recommended: true, cost_in: 0, cost_out: 0}
+    - {id: "llama-3.1-8b-instant", name: "Llama 3.1 8B (fast)", cost_in: 0, cost_out: 0}
+
+gemini:
+  name: "Google Gemini (FREE)"
+  provider: openai_compatible
+  base_url: "https://generativelanguage.googleapis.com/v1beta/openai"
+  free_tier: "1,500 requests/day for Gemini 2.0 Flash"
+  api_key_url: "https://aistudio.google.com/apikey"
+  models:
+    - {id: "gemini-2.0-flash", name: "Gemini 2.0 Flash", recommended: true, cost_in: 0, cost_out: 0}
+    - {id: "gemini-1.5-flash", name: "Gemini 1.5 Flash", cost_in: 0, cost_out: 0}
+
+cerebras:
+  name: "Cerebras (FREE, ultra-fast)"
+  provider: openai_compatible
+  base_url: "https://api.cerebras.ai/v1"
+  free_tier: "~8,000 requests/day"
+  api_key_url: "https://cloud.cerebras.ai"
+  models:
+    - {id: "llama-3.3-70b", name: "Llama 3.3 70B", recommended: true, cost_in: 0, cost_out: 0}
+
+mistral:
+  name: "Mistral La Plateforme (FREE tier)"
+  provider: openai_compatible
+  base_url: "https://api.mistral.ai/v1"
+  free_tier: "rate-limited free tier"
+  api_key_url: "https://console.mistral.ai/api-keys"
+  models:
+    - {id: "mistral-small-latest", name: "Mistral Small", recommended: true}
+    - {id: "open-mistral-nemo", name: "Mistral Nemo"}
+
+openai:
+  name: "OpenAI (paid)"
+  provider: openai_compatible
+  base_url: "https://api.openai.com/v1"
+  api_key_url: "https://platform.openai.com/api-keys"
+  models:
+    - {id: "gpt-4o-mini", name: "GPT-4o mini", recommended: true, cost_in: 0.15, cost_out: 0.60}
+    - {id: "gpt-4o", name: "GPT-4o", cost_in: 2.50, cost_out: 10.00}
+
+anthropic:
+  name: "Anthropic Claude (paid)"
+  provider: anthropic
+  api_key_url: "https://console.anthropic.com/settings/keys"
+  models:
+    - {id: "claude-haiku-4-5", name: "Claude Haiku 4.5", recommended: true, cost_in: 1.00, cost_out: 5.00}
+    - {id: "claude-sonnet-4-6", name: "Claude Sonnet 4.6", cost_in: 3.00, cost_out: 15.00}
+
+deepseek:
+  name: "DeepSeek (cheapest paid)"
+  provider: openai_compatible
+  base_url: "https://api.deepseek.com/v1"
+  api_key_url: "https://platform.deepseek.com/api_keys"
+  models:
+    - {id: "deepseek-chat", name: "DeepSeek V3", recommended: true, cost_in: 0.27, cost_out: 1.10}
+
+openrouter:
+  name: "OpenRouter (100+ models)"
+  provider: openrouter
+  base_url: "https://openrouter.ai/api/v1"
+  api_key_url: "https://openrouter.ai/keys"
+  models:
+    - {id: "google/gemini-2.0-flash-exp:free", name: "Gemini 2.0 Flash (free)", recommended: true, cost_in: 0, cost_out: 0}
+    - {id: "meta-llama/llama-3.3-70b-instruct", name: "Llama 3.3 70B"}
+    - {id: "anthropic/claude-3.5-sonnet", name: "Claude 3.5 Sonnet"}

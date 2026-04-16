@@ -1,0 +1,92 @@
+# Example: Startup founder
+# Tech news + HN + founder-voiced essays + funding intel.
+# LLM: Anthropic Claude Haiku — best nuance/$ ratio for synthesis.
+
+user:
+  name: Founder
+  language: en
+  timezone: America/New_York
+  profile: |
+    First-time founder building a B2B SaaS. I want signal on developer tools,
+    product launches, fundraising climate, and founder essays. Skip crypto,
+    celebrity CEOs, and recycled Twitter drama.
+
+schedule:
+  send_at: "07:15"
+  timezone: America/New_York
+  blocks:
+    - id: morning
+      send_at: "07:15"
+      topics: [hn, launches, founder_voices]
+    - id: evening
+      send_at: "20:00"
+      topics: [funding]
+
+llm:
+  preset: anthropic
+  api_key_env: ANTHROPIC_API_KEY
+  model: claude-3-5-haiku-latest
+  routing:
+    filter: groq
+    discovery: gemini
+  providers:
+    groq:
+      preset: groq
+      api_key_env: GROQ_API_KEY
+    gemini:
+      preset: gemini
+      api_key_env: GEMINI_API_KEY
+
+delivery:
+  telegram:
+    bot_token_env: TELEGRAM_BOT_TOKEN
+    chat_id: 123456789
+
+format:
+  items_per_topic: 5
+  card_style: compact
+  blockquote_why: true
+  footer: "— stay focused"
+
+topics:
+  - id: hn
+    name: "HN"
+    emoji: "🧡"
+    items_per_digest: 5
+    sources:
+      hackernews:
+        - name: top
+          min_score: 150
+        - name: best
+
+  - id: launches
+    name: "Product launches"
+    emoji: "🚀"
+    items_per_digest: 4
+    sources:
+      rss:
+        - https://www.producthunt.com/feed
+      search:
+        - "Show HN launch this week"
+
+  - id: founder_voices
+    name: "Founder essays"
+    emoji: "✍️"
+    items_per_digest: 3
+    sources:
+      rss:
+        - https://paulgraham.com/articles.html
+        - https://blog.samaltman.com/posts.atom
+        - https://www.joelonsoftware.com/feed/
+      search:
+        - "founder essay startup lessons 2025"
+
+  - id: funding
+    name: "Funding & market"
+    emoji: "💰"
+    items_per_digest: 5
+    blacklist: ["crypto raise", "NFT", "SPAC"]
+    sources:
+      rss:
+        - https://techcrunch.com/category/venture/feed/
+      telegram: [strictlyvc]
