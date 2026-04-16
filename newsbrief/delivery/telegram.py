@@ -166,14 +166,16 @@ def _post_with_retry(
 class TelegramChannel(DeliveryChannel):
     channel_id = "telegram"
 
-    def __init__(self, bot_token: str = "", chat_id: str = ""):
+    def __init__(self, bot_token: str = "", chat_id: str = "", feedback_buttons: bool = False):
         self.bot_token = bot_token or os.getenv("TELEGRAM_TOKEN", "")
         self.chat_id   = str(chat_id or os.getenv("TELEGRAM_CHAT_ID", ""))
+        self.feedback_buttons = bool(feedback_buttons)
 
     @classmethod
     def from_config(cls, config) -> "TelegramChannel":
         tg = config.delivery.telegram
-        return cls(bot_token=tg.bot_token, chat_id=tg.chat_id)
+        fb = bool(getattr(getattr(config, "format", None), "feedback_buttons", False))
+        return cls(bot_token=tg.bot_token, chat_id=tg.chat_id, feedback_buttons=fb)
 
     # --- main send -----------------------------------------------------
 
@@ -274,8 +276,9 @@ class TelegramChannel(DeliveryChannel):
                     "parse_mode":               "HTML",
                     "disable_web_page_preview": True,
                 }
-                # First part (header/headlines) has no feedback buttons
-                if i > 0:
+                # First part (header/headlines) has no feedback buttons.
+                # Skip entirely when feedback_buttons is disabled (default).
+                if i > 0 and self.feedback_buttons:
                     kb = build_feedback_keyboard(digest_id, i)
                     payload["reply_markup"] = json.dumps(kb)
                 try:

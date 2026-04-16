@@ -54,7 +54,7 @@ from dataclasses import dataclass
 from datetime import datetime, timezone
 from typing import Dict, List, Optional, Set
 
-from newsbrief.sources._legacy_fetcher import RawArticle
+from newsbrief.core.models import RawArticle
 from .dedup import normalize_title
 
 logger = logging.getLogger("uvicorn.error")
@@ -211,9 +211,28 @@ def group_similar_articles(articles: List[RawArticle]) -> List[DigestEvent]:
     kws = [_keywords(a.title) for a in articles]
     uf  = _UnionFind(n)
 
+    # Inverted index: token → list of article indices containing that token.
+    # Candidate pairs only need to be compared if they share at least one token.
+    token_to_ids: Dict[str, List[int]] = defaultdict(list)
+    for i, ks in enumerate(kws):
+        for tok in ks:
+            token_to_ids[tok].append(i)
+
+    checked: Set[tuple] = set()
     for i in range(n):
-        for j in range(i + 1, n):
-            if not kws[i] or not kws[j]:
+        if not kws[i]:
+            continue
+        candidates: Set[int] = set()
+        for tok in kws[i]:
+            candidates.update(token_to_ids.get(tok, ()))
+        for j in candidates:
+            if j <= i:
+                continue
+            key = (i, j)
+            if key in checked:
+                continue
+            checked.add(key)
+            if not kws[j]:
                 continue
             shared  = len(kws[i] & kws[j])
             jaccard = _jaccard(kws[i], kws[j])

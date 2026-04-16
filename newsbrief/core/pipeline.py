@@ -23,7 +23,7 @@ except Exception:  # noqa: BLE001
     fetch_all = None  # type: ignore[assignment]
 
 try:
-    from newsbrief.sources._legacy_fetcher import collect_raw_articles as _legacy_collect
+    _legacy_collect = None  # legacy fetcher removed
 except Exception:  # noqa: BLE001
     _legacy_collect = None  # type: ignore[assignment]
 
@@ -133,6 +133,27 @@ def run_pipeline(
         "digest_id":    None,
     }
 
+    # --- 0. Progress notification (best-effort) ---
+    if send:
+        try:
+            from newsbrief.delivery.telegram import TelegramChannel
+            _progress = TelegramChannel.from_config(config)
+            _progress.send([
+                "🔄 Собираю дайджест...\nЭто может занять 3-5 минут."
+            ])
+        except Exception as e:
+            logger.warning("[pipeline] progress notify failed: %s", e)
+
+    # Apply serial-mode override for synthesizer workers.
+    try:
+        if getattr(getattr(config, "llm", None), "serial", False):
+            import os as _os
+            _os.environ["DIGEST_PARALLEL_WORKERS"] = "1"
+            import newsbrief.processing.synthesizer as _synth
+            _synth.DIGEST_PARALLEL_WORKERS = 1
+    except Exception:
+        pass
+
     try:
         # --- 1. Fetch ---
         categories = [t.id for t in (config.topics or [])] or [
@@ -208,6 +229,52 @@ def run_pipeline(
             events  = group_similar_articles(deduped)
             events  = [e for e in events if not event_matches_blacklist(e, blacklist)]
 
+            # --- Phase 6: smart entity grouping + cross-digest dedup ---
+            dedup_cfg = getattr(config, "dedup", None)
+            if dedup_cfg is not None and events:
+                try:
+                    from newsbrief.processing.semantic_dedup import (
+                        group_by_entities, filter_recent_duplicates,
+                    )
+                    entity_router = llm_router if getattr(dedup_cfg, "use_llm_entities", False) else None
+                    if getattr(dedup_cfg, "entity_grouping", True):
+                        events = group_by_entities(
+                            events,
+                            threshold=float(getattr(dedup_cfg, "entity_threshold", 0.5)),
+                            llm_router=entity_router,
+                        )
+                    events = filter_recent_duplicates(
+                        events,
+                        storage,
+                        days=int(getattr(dedup_cfg, "cross_digest_days", 7)),
+                        threshold=float(getattr(dedup_cfg, "semantic_similarity_threshold", 0.7)),
+                        llm_router=entity_router,
+                    )
+                    # Drop events whose matched story was in a very recent digest.
+                    try:
+                        from newsbrief.core.stories import (
+                            ensure_stories_table, find_matching_story,
+                            was_in_recent_digest,
+                        )
+                        ensure_stories_table(storage)
+                        recent_days = int(getattr(dedup_cfg, "recent_story_days", 3))
+                        filtered = []
+                        for ev in events:
+                            ents = getattr(ev, "entities", None) or {}
+                            sid = find_matching_story(ents, storage, days=14)
+                            if sid and was_in_recent_digest(sid, recent_days, storage):
+                                logger.info(
+                                    "[pipeline] drop event — story %d seen in last %d days",
+                                    sid, recent_days,
+                                )
+                                continue
+                            filtered.append(ev)
+                        events = filtered
+                    except Exception as e:
+                        logger.warning("[pipeline] stories filter failed: %s", e)
+                except Exception as e:
+                    logger.warning("[pipeline] semantic_dedup failed: %s", e)
+
             # Optional semantic pre-filter via LLM
             if (sem_include or sem_exclude) and llm_router is not None and events:
                 from newsbrief.processing.semantic_filter import filter_events_semantically
@@ -278,6 +345,28 @@ def run_pipeline(
             issue.full_text, len(issue.telegram_parts), issue.metadata,
         )
         result["digest_id"]  = digest_id
+        # --- Phase 6: update stories table ---
+        try:
+            from newsbrief.core.stories import (
+                ensure_stories_table, find_matching_story,
+                create_story, update_story,
+            )
+            from newsbrief.processing.semantic_dedup import extract_entities
+            ensure_stories_table(storage)
+            for cat_events in events_by_cat.values():
+                for ev in cat_events[:10]:
+                    title = getattr(ev, "canonical_title", "") or ""
+                    ents  = getattr(ev, "entities", None)
+                    if not ents:
+                        ents = extract_entities(title)
+                    sid = find_matching_story(ents, storage, days=14)
+                    if sid:
+                        update_story(sid, digest_id, storage)
+                    else:
+                        create_story(title, ents, digest_id, storage)
+        except Exception as e:
+            logger.warning("[pipeline] stories upsert failed: %s", e)
+
         result["item_count"] = issue.item_count
         result["parts"]      = len(issue.telegram_parts)
         result["full_text"]  = issue.full_text
@@ -322,4 +411,12 @@ def run_pipeline(
         result["duration_sec"] = duration
         result["error"]        = str(e)
         _finalize_run(storage, run_id, started_at, "error", error=str(e))
+        if send:
+            try:
+                from newsbrief.delivery.telegram import TelegramChannel
+                TelegramChannel.from_config(config).send([
+                    "⚠️ Ошибка при сборке. Проверь логи."
+                ])
+            except Exception as _err:
+                logger.warning("[pipeline] failure-notify failed: %s", _err)
         return result

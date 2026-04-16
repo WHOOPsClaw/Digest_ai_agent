@@ -33,6 +33,8 @@ class TopicConfig(BaseModel):
     interests_boost: list[str] = Field(default_factory=list)
     blacklist: list[str] = Field(default_factory=list)
     items_per_digest: int = 5
+    fetch_limit_per_source: int = 25
+    max_articles_total: int = 300
 
 
 class ScheduleConfig(BaseModel):
@@ -42,7 +44,30 @@ class ScheduleConfig(BaseModel):
     timezone: str = "Europe/Moscow"
 
 
+class SingleLLMConfig(BaseModel):
+    """One configured LLM provider (one of many)."""
+    preset: Optional[str] = None
+    provider: Optional[str] = None
+    base_url: Optional[str] = None
+    api_key: Optional[str] = None
+    model: Optional[str] = None
+    display_name: Optional[str] = None  # user-friendly label
+    temperature: float = 0.7
+    max_tokens: int = 400
+    headers: dict = Field(default_factory=dict)
+    params: dict = Field(default_factory=dict)
+
+
 class LLMConfig(BaseModel):
+    """Multi-provider LLM configuration.
+
+    New format uses ``providers`` (dict id → SingleLLMConfig) plus an
+    ``active`` pointer. The top-level ``preset``/``api_key``/… fields remain
+    for backward compatibility with single-provider configs.
+    """
+    active: str = "default"
+    providers: dict[str, SingleLLMConfig] = Field(default_factory=dict)
+    # Backward compat (old single-provider configs):
     preset: Optional[str] = "groq"
     provider: Optional[str] = None
     base_url: Optional[str] = None
@@ -54,7 +79,34 @@ class LLMConfig(BaseModel):
     params: dict = Field(default_factory=dict)
     # Multi-provider routing
     routing: Optional[dict] = None
-    providers: Optional[dict] = None
+    # Rate-limit / throughput controls
+    serial: bool = False                    # force single-threaded synthesis
+    request_delay_sec: float = 0.0          # sleep between requests
+
+    def resolve_active(self) -> dict:
+        """Return the currently active provider config as a plain dict.
+
+        If ``providers`` is populated, return the entry at ``active`` (or the
+        first provider if ``active`` is missing). Otherwise fall back to the
+        legacy top-level fields.
+        """
+        if self.providers:
+            spec = self.providers.get(self.active)
+            if spec is None:
+                self.active = next(iter(self.providers))
+                spec = self.providers[self.active]
+            return spec.model_dump()
+        return {
+            "preset": self.preset,
+            "provider": self.provider,
+            "base_url": self.base_url,
+            "api_key": self.api_key,
+            "model": self.model,
+            "temperature": self.temperature,
+            "max_tokens": self.max_tokens,
+            "headers": dict(self.headers or {}),
+            "params": dict(self.params or {}),
+        }
 
 
 class TelegramConfig(BaseModel):
@@ -72,6 +124,8 @@ class FormatConfig(BaseModel):
     card_style: str = "medium"  # short | medium | detailed
     blockquote_why: bool = True
     include_editor_take: bool = False
+    feedback_buttons: bool = False  # inline 👍👎🔕📌 buttons on cards (disabled by default)
+    images: bool = True  # show article images (link previews) in Telegram cards
 
 
 class FiltersConfig(BaseModel):
@@ -95,6 +149,17 @@ class LearningConfig(BaseModel):
     apply_frequency_days: int = 7
 
 
+class DedupConfig(BaseModel):
+    """Phase 6: smart deduplication + entity grouping."""
+    cross_digest_days: int = 7
+    entity_grouping: bool = True
+    entity_threshold: float = 0.5
+    semantic_similarity_threshold: float = 0.7
+    min_sources_for_grouping: int = 2
+    recent_story_days: int = 3
+    use_llm_entities: bool = False
+
+
 class NewsbriefConfig(BaseModel):
     user:     UserConfig = Field(default_factory=UserConfig)
     topics:   list[TopicConfig] = Field(default_factory=list)
@@ -104,6 +169,7 @@ class NewsbriefConfig(BaseModel):
     format:   FormatConfig = Field(default_factory=FormatConfig)
     filters:  FiltersConfig = Field(default_factory=FiltersConfig)
     learning: LearningConfig = Field(default_factory=LearningConfig)
+    dedup:    DedupConfig = Field(default_factory=DedupConfig)
     blocks:   list[BlockConfig] = Field(default_factory=list)
     prompts:  dict = Field(default_factory=dict)
 
@@ -114,7 +180,14 @@ class NewsbriefConfig(BaseModel):
         with open(path) as f:
             data = yaml.safe_load(f) or {}
         data = _expand_env(data)
-        return cls.model_validate(data)
+        cfg = cls.model_validate(data)
+        # Auto-migrate old single-provider configs to multi-provider.
+        try:
+            from newsbrief.llm.migration import migrate_single_to_multi
+            cfg = migrate_single_to_multi(cfg)
+        except Exception:
+            pass
+        return cfg
 
     def save(self, path: str = "config.yaml") -> None:
         data = self.model_dump(exclude_none=True)

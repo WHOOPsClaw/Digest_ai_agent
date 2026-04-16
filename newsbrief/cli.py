@@ -61,6 +61,12 @@ def _build_parser() -> argparse.ArgumentParser:
     llm_sub.add_parser("setup")
     llm_sub.add_parser("list")
     llm_sub.add_parser("test")
+    p_sw = llm_sub.add_parser("switch", help="Switch active provider")
+    p_sw.add_argument("provider_id")
+    p_add = llm_sub.add_parser("add", help="Add a new provider (interactive)")
+    p_add.add_argument("preset", nargs="?", default=None)
+    p_rm = llm_sub.add_parser("remove", help="Remove a provider")
+    p_rm.add_argument("provider_id")
 
     srcs = sub.add_parser("sources", help="Sources management")
     srcs_sub = srcs.add_subparsers(dest="src_cmd")
@@ -312,7 +318,11 @@ def _dispatch(args) -> int:
 
     if cmd == "llm":
         from newsbrief.llm.cli import dispatch as llm_dispatch
-        return llm_dispatch(getattr(args, "llm_cmd", None))
+        return llm_dispatch(
+            getattr(args, "llm_cmd", None),
+            provider_id=getattr(args, "provider_id", None),
+            preset=getattr(args, "preset", None),
+        )
 
     if cmd == "sources":
         sub_cmd = getattr(args, "src_cmd", None)

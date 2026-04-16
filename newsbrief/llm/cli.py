@@ -29,9 +29,21 @@ def _load_config() -> Any | None:
 
 
 def cmd_list() -> int:
-    """Print available presets and which one is currently configured."""
-    presets = load_presets()
+    """Print configured providers (if any) + available presets."""
     cfg = _load_config()
+    # Configured providers first.
+    if cfg is not None and getattr(cfg.llm, "providers", None):
+        from newsbrief.llm.manager import list_providers
+        print("Configured providers:\n")
+        for p in list_providers(cfg):
+            marker = " [ACTIVE]" if p["active"] else ""
+            print(
+                f"  {p['id']:12s} — {p['display_name']} "
+                f"({p['model'] or 'default'}) [{p['status']}]{marker}"
+            )
+        print()
+
+    presets = load_presets()
     current = None
     if cfg is not None:
         current = getattr(getattr(cfg, "llm", None), "preset", None)
@@ -172,12 +184,105 @@ def cmd_setup() -> int:
     return 0
 
 
-def dispatch(subcmd: str | None) -> int:
+def cmd_switch(provider_id: str) -> int:
+    from newsbrief.llm.manager import set_active
+    cfg = _load_config()
+    if cfg is None:
+        print("No config found.")
+        return 1
+    if not set_active(cfg, provider_id):
+        print(f"Unknown provider: {provider_id!r}")
+        return 1
+    if hasattr(cfg, "save"):
+        cfg.save()
+    print(f"Active LLM provider → {provider_id}")
+    return 0
+
+
+def cmd_remove(provider_id: str) -> int:
+    from newsbrief.llm.manager import remove_provider
+    cfg = _load_config()
+    if cfg is None:
+        print("No config found.")
+        return 1
+    if not remove_provider(cfg, provider_id):
+        print(f"Unknown provider: {provider_id!r}")
+        return 1
+    if hasattr(cfg, "save"):
+        cfg.save()
+    print(f"Removed provider: {provider_id}")
+    return 0
+
+
+def cmd_add(preset: str | None) -> int:
+    """Interactive: add a new provider by preset."""
+    from newsbrief.config import SingleLLMConfig
+    from newsbrief.llm.manager import add_provider
+
+    presets = load_presets()
+    if preset is None:
+        preset = _prompt("Preset id", get_default_preset_id())
+    if preset not in presets and preset != "custom":
+        print(f"Unknown preset: {preset!r}")
+        return 1
+
+    cfg = _load_config()
+    if cfg is None:
+        print("No config found. Run `newsbrief setup` first.")
+        return 1
+
+    base_url = None
+    model = None
+    if preset == "custom":
+        base_url = _prompt("Base URL (OpenAI-compatible)")
+        model = _prompt("Model name")
+    else:
+        entry = presets[preset]
+        models = entry.get("models") or []
+        rec = next((m for m in models if m.get("recommended")), models[0] if models else None)
+        model = rec.get("id") if rec else None
+
+    api_key = _prompt("API key")
+    if not api_key:
+        print("No API key — aborting.")
+        return 1
+
+    # Pick an id.
+    provider_id = _prompt("Provider id (short)", preset)
+    spec = SingleLLMConfig(
+        preset=None if preset == "custom" else preset,
+        provider="openai_compatible" if preset == "custom" else None,
+        base_url=base_url,
+        api_key=api_key,
+        model=model,
+        display_name=provider_id.title(),
+    )
+    add_provider(cfg, provider_id, spec)
+    if hasattr(cfg, "save"):
+        cfg.save()
+    print(f"Added provider {provider_id!r} (active={cfg.llm.active})")
+    return 0
+
+
+def dispatch(subcmd: str | None, *, provider_id: str | None = None,
+             preset: str | None = None) -> int:
     if subcmd == "list":
         return cmd_list()
     if subcmd == "test":
         return cmd_test()
     if subcmd == "setup":
         return cmd_setup()
-    print("Usage: newsbrief llm {list|test|setup}")
+    if subcmd == "switch":
+        if not provider_id:
+            print("Usage: newsbrief llm switch <provider_id>")
+            return 1
+        return cmd_switch(provider_id)
+    if subcmd == "add":
+        return cmd_add(preset)
+    if subcmd == "remove":
+        if not provider_id:
+            print("Usage: newsbrief llm remove <provider_id>")
+            return 1
+        return cmd_remove(provider_id)
+    print("Usage: newsbrief llm {list|test|setup|switch|add|remove}")
     return 1

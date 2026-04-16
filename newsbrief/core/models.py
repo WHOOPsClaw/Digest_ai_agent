@@ -16,6 +16,7 @@ class RawArticle:
     source:       str  # e.g. "rss:bbc_world", "tg:pekagame", "reddit:LocalLLaMA"
     published_at: Optional[datetime] = None
     role:         str = "source"  # "signal" | "source" | "analysis"
+    image_url:    Optional[str] = None
 
 
 @dataclass
@@ -38,6 +39,7 @@ class SynthesizedItem:
     final_score:     float = 0.0
     canonical_title: str = ""
     confidence:      Literal["verified", "partial", "signal"] = "verified"
+    image_url:       Optional[str] = None
 
     def __post_init__(self):
         if not self.canonical_title:

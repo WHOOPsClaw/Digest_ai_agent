@@ -83,24 +83,7 @@ def cmd_stats(days: int = 7,
     console.print(f"  🔕 Blocked: {blocked}")
     console.print(f"  📌 Saved: {saved}\n")
 
-    # ------------------------------------------------------------------
-    # Top sources by 👍
-    # ------------------------------------------------------------------
-    top_rows = _safe_fetchall(
-        storage,
-        "SELECT source, COUNT(*) AS n FROM feedback "
-        "WHERE created_at >= %s AND rating IN ('like', '👍') "
-        "GROUP BY source ORDER BY n DESC LIMIT 5",
-        (since_iso,),
-    )
-    if top_rows:
-        console.print("[bold]Top sources (by 👍):[/bold]")
-        for i, r in enumerate(top_rows, 1):
-            src = r.get("source") or "—"
-            n = int(r.get("n") or 0)
-            dots = "." * max(1, 30 - len(str(src)))
-            console.print(f"  {i}. {src} {dots} {n} 👍")
-        console.print()
+    # Top sources by 👍 — hidden (feedback buttons disabled by default in v0.2)
 
     # ------------------------------------------------------------------
     # Pipeline runs

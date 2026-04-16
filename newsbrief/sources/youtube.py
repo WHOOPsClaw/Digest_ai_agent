@@ -11,6 +11,7 @@ import httpx
 
 from newsbrief.core.models import RawArticle
 from newsbrief.sources.base import SourceProvider
+from newsbrief.utils.image_extractor import extract_image_from_feedparser_entry
 
 logger = logging.getLogger(__name__)
 
@@ -82,6 +83,11 @@ class YouTubeProvider(SourceProvider):
             title = (getattr(entry, "title", None) or "").strip()
             if not link or not title:
                 continue
+            image_url = None
+            try:
+                image_url = extract_image_from_feedparser_entry(entry)
+            except Exception:
+                image_url = None
             yield RawArticle(
                 category=category,
                 title=title,
@@ -90,4 +96,5 @@ class YouTubeProvider(SourceProvider):
                 source=source,
                 published_at=_parse_published(entry),
                 role="source",
+                image_url=image_url,
             )

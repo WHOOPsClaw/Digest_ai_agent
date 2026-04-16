@@ -60,7 +60,7 @@ from typing import List, Set
 
 # psycopg2 lazy
 
-from newsbrief.sources._legacy_fetcher import RawArticle
+from newsbrief.core.models import RawArticle
 
 logger = logging.getLogger("uvicorn.error")
 
@@ -107,6 +107,51 @@ def build_url_hash(title: str, url: str) -> str:
 # Stage 1: batch dedup
 # ---------------------------------------------------------------------------
 
+def _simhash(text: str, bits: int = 64) -> int:
+    """Compute a bits-wide SimHash over whitespace tokens of ``text``."""
+    tokens = (text or "").lower().split()
+    if not tokens:
+        return 0
+    v = [0] * bits
+    mask = (1 << bits) - 1
+    for tok in tokens:
+        h = int(hashlib.md5(tok.encode("utf-8")).hexdigest(), 16) & mask
+        for i in range(bits):
+            if h & (1 << i):
+                v[i] += 1
+            else:
+                v[i] -= 1
+    sig = 0
+    for i in range(bits):
+        if v[i] > 0:
+            sig |= (1 << i)
+    return sig
+
+
+def _hamming(a: int, b: int) -> int:
+    return bin(a ^ b).count("1")
+
+
+def fast_dedup(articles, threshold: int = 4):
+    """Dedup a batch of articles by SimHash Hamming distance.
+
+    Used when the batch is large enough that exact-match dedup is insufficient
+    (minor textual variants from aggregators). Complexity is O(N^2) but with
+    cheap 64-bit int operations, so works up to a few thousand items.
+    """
+    seen_hashes: list = []
+    result: list = []
+    for a in articles:
+        title = getattr(a, "title", "") or ""
+        snippet = getattr(a, "snippet", "") or ""
+        sig = _simhash(title + " " + snippet[:200])
+        if any(_hamming(sig, h) < threshold for h in seen_hashes):
+            continue
+        seen_hashes.append(sig)
+        result.append(a)
+    return result
+
+
 def deduplicate_against_batch(articles: List[RawArticle]) -> List[RawArticle]:
     """Remove intra-batch duplicates. First occurrence wins.
 
@@ -143,6 +188,16 @@ def deduplicate_against_batch(articles: List[RawArticle]) -> List[RawArticle]:
     dropped = len(articles) - len(result)
     if dropped:
         logger.info("[dedup] batch: %d→%d (dropped %d)", len(articles), len(result), dropped)
+
+    # For large batches, apply SimHash fuzzy pass on top of exact-match result
+    if len(result) > 50:
+        before = len(result)
+        result = fast_dedup(result)
+        if len(result) < before:
+            logger.info(
+                "[dedup] simhash: %d→%d (dropped %d near-duplicates)",
+                before, len(result), before - len(result),
+            )
     return result
 
 

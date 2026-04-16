@@ -51,7 +51,7 @@ def test_stats_happy_path():
     assert "Total cards delivered: 140" in out
     assert "42" in out   # liked
     assert "18" in out   # disliked
-    assert "rss:simonwillison.net" in out
+    # Top-sources section removed in Phase 3
     assert "Succeeded: 7" in out
     assert "Failed: 0" in out
 

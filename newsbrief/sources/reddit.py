@@ -10,6 +10,7 @@ import httpx
 
 from newsbrief.core.models import RawArticle
 from newsbrief.sources.base import SourceProvider
+from newsbrief.utils.image_extractor import extract_image_from_reddit
 
 logger = logging.getLogger(__name__)
 
@@ -78,6 +79,11 @@ class RedditProvider(SourceProvider):
                 except Exception:
                     pass
 
+            image_url = None
+            try:
+                image_url = extract_image_from_reddit(d)
+            except Exception:
+                image_url = None
             yield RawArticle(
                 category=category,
                 title=title,
@@ -86,5 +92,6 @@ class RedditProvider(SourceProvider):
                 source=source,
                 published_at=pub_at,
                 role="source",
+                image_url=image_url,
             )
             yielded += 1

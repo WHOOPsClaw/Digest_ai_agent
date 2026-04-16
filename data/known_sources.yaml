@@ -368,6 +368,41 @@ topics:
         name: "r/science"
         language: en
         quality: medium
+      - type: rss
+        url: "https://www.sciencedaily.com/rss/all.xml"
+        name: "ScienceDaily"
+        language: en
+        quality: medium
+      - type: rss
+        url: "https://arstechnica.com/science/feed/"
+        name: "Ars Technica Science"
+        language: en
+        quality: high
+      - type: rss
+        url: "https://www.technologyreview.com/feed/"
+        name: "MIT Technology Review"
+        language: en
+        quality: high
+      - type: rss
+        url: "https://www.livescience.com/feeds/all"
+        name: "Live Science"
+        language: en
+        quality: medium
+      - type: rss
+        url: "https://www.eurekalert.org/rss/technology_engineering.xml"
+        name: "EurekAlert! Tech"
+        language: en
+        quality: medium
+      - type: reddit
+        config: {sub: "EverythingScience", min_score: 200}
+        name: "r/EverythingScience"
+        language: en
+        quality: medium
+      - type: reddit
+        config: {sub: "physics", min_score: 150}
+        name: "r/physics"
+        language: en
+        quality: medium
 
   business:
     display_name: "Business / Finance"
@@ -518,3 +553,28 @@ topics:
         name: "r/netsec"
         language: en
         quality: high
+      - type: rss
+        url: "https://grahamcluley.com/feed/"
+        name: "Graham Cluley"
+        language: en
+        quality: medium
+      - type: rss
+        url: "https://www.securityweek.com/feed/"
+        name: "SecurityWeek"
+        language: en
+        quality: medium
+      - type: rss
+        url: "https://www.cisa.gov/news.xml"
+        name: "CISA News"
+        language: en
+        quality: high
+      - type: rss
+        url: "https://www.csoonline.com/index.rss"
+        name: "CSO Online"
+        language: en
+        quality: medium
+      - type: reddit
+        config: {sub: "cybersecurity", min_score: 100}
+        name: "r/cybersecurity"
+        language: en
+        quality: medium

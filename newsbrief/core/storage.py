@@ -142,6 +142,18 @@ class StorageAdapter:
                 created_at  TIMESTAMP DEFAULT CURRENT_TIMESTAMP
             )""",
 
+            # Stories — long-running topic tracking (Phase 6)
+            """CREATE TABLE IF NOT EXISTS stories (
+                id               INTEGER PRIMARY KEY AUTOINCREMENT,
+                canonical_title  TEXT NOT NULL,
+                entities_json    TEXT,
+                first_seen_at    TIMESTAMP,
+                last_seen_at     TIMESTAMP,
+                card_count       INTEGER DEFAULT 1,
+                digest_ids_json  TEXT
+            )""",
+            "CREATE INDEX IF NOT EXISTS idx_stories_last_seen ON stories(last_seen_at DESC)",
+
             # User state for Telegram bot FSM
             """CREATE TABLE IF NOT EXISTS bot_state (
                 user_id       TEXT PRIMARY KEY,

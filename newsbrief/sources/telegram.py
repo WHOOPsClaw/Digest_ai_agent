@@ -10,6 +10,7 @@ import httpx
 
 from newsbrief.core.models import RawArticle
 from newsbrief.sources.base import SourceProvider
+from newsbrief.utils.image_extractor import extract_image_from_html, is_valid_image_url
 
 logger = logging.getLogger(__name__)
 
@@ -20,6 +21,10 @@ _TG_MSG_RE = re.compile(
 )
 _TG_TIME_RE = re.compile(r'<time[^>]+datetime="([^"]+)"', re.IGNORECASE)
 _TG_MSGLINK_RE = re.compile(r'href="(https://t\.me/[^/]+/\d+)"', re.IGNORECASE)
+_TG_PHOTO_RE = re.compile(
+    r"background-image:\s*url\(['\"]?(https?://[^'\")\s]+)['\"]?\)",
+    re.IGNORECASE,
+)
 
 _USER_AGENT = "Mozilla/5.0 (compatible; Googlebot/2.1)"
 
@@ -74,6 +79,9 @@ class TelegramProvider(SourceProvider):
         msg_texts = _TG_MSG_RE.findall(html)
         timestamps = _TG_TIME_RE.findall(html)
         msg_links = _TG_MSGLINK_RE.findall(html)
+        # Try og:image first (page-level), fall back to first photo wrap bg-image
+        og_image = extract_image_from_html(html)
+        photo_matches = _TG_PHOTO_RE.findall(html)
 
         # Take most recent `limit` posts (they appear in chronological order).
         recent = msg_texts[-limit:]
@@ -98,6 +106,13 @@ class TelegramProvider(SourceProvider):
                 except Exception:
                     pass
 
+            image_url = None
+            if photo_matches:
+                candidate = photo_matches[0]
+                if is_valid_image_url(candidate):
+                    image_url = candidate
+            if not image_url and og_image:
+                image_url = og_image
             yield RawArticle(
                 category=category,
                 title=_title_from(text),
@@ -106,4 +121,5 @@ class TelegramProvider(SourceProvider):
                 source=source,
                 published_at=pub_at,
                 role="signal",
+                image_url=image_url,
             )
