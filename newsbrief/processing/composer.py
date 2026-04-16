@@ -446,6 +446,41 @@ def _best_split_pos(chunk: str, max_len: int) -> int:
 # Main entry point
 # ---------------------------------------------------------------------------
 
+
+def _is_quality_card(item) -> bool:
+    """Filter out garbage cards: raw English, markdown leftovers, too short."""
+    import re
+    summary = (item.summary_ru or "").strip()
+    title = (item.title or "").strip()
+
+    if len(summary) < 30:
+        return False  # stub / empty
+    if not title or len(title) < 5:
+        return False
+
+    # Markdown leftovers or raw tool dumps
+    if summary.count("```") > 0 or summary.count("  Tags:") > 0:
+        return False
+    if "Release:" in summary and "Datasette" in summary:
+        return False
+    if summary.startswith("Tool:"):
+        return False
+
+    # Mostly English? Check Cyrillic ratio
+    cyrillic = sum(1 for c in summary if "\u0400" <= c <= "\u04ff")
+    latin = sum(1 for c in summary if c.isascii() and c.isalpha())
+    if cyrillic + latin > 20:
+        cyrillic_ratio = cyrillic / (cyrillic + latin)
+        if cyrillic_ratio < 0.35:  # less than 35% Cyrillic = not translated
+            return False
+
+    # HTML entity garbage
+    if "&amp;#" in summary or "&#x" in summary:
+        return False
+
+    return True
+
+
 def compose_digest_issue(
     items_by_category: Dict[str, List[SynthesizedItem]],
     issue_date: _date,
@@ -468,6 +503,20 @@ def compose_digest_issue(
     with sub-splitting only when a section exceeds TELEGRAM_MAX_LEN.
     """
     radar_items = radar_items or []
+
+    # Filter out garbage cards (raw English, markdown leftovers, too short)
+    _before_total = sum(len(v) for v in items_by_category.values())
+    items_by_category = {
+        cat: [i for i in items if _is_quality_card(i)]
+        for cat, items in items_by_category.items()
+    }
+    _after_total = sum(len(v) for v in items_by_category.values())
+    if _before_total != _after_total:
+        import logging as _logging
+        _logging.getLogger("uvicorn.error").info(
+            "[composer] quality filter: %d → %d (dropped %d garbage cards)",
+            _before_total, _after_total, _before_total - _after_total,
+        )
 
     # Apply card style for this render
     global _CARD_STYLE

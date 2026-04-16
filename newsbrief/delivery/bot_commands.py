@@ -26,6 +26,18 @@ logger = logging.getLogger("newsbrief")
 POLL_TIMEOUT_SEC  = 30
 
 
+
+# Persistent reply keyboard — always visible below input
+PERSISTENT_KEYBOARD = {
+    "keyboard": [
+        [{"text": "📰 Дайджест сейчас"}],
+        [{"text": "⚙️ Меню настроек"}, {"text": "🕐 Расписание"}],
+    ],
+    "resize_keyboard": True,
+    "is_persistent": True,
+}
+
+
 class BotCommandHandler:
     def __init__(
         self,
@@ -51,13 +63,12 @@ class BotCommandHandler:
     def handle_start(self, chat_id: str) -> str:
         return (
             "👋 <b>Добро пожаловать в newsbrief!</b>\n\n"
-            "Это self-hosted AI-дайджест новостей.\n\n"
-            "Команды:\n"
-            "• /digest — получить дайджест сейчас\n"
-            "• /schedule — изменить время доставки\n"
-            "• /stats — недельная статистика\n"
-            "• /pause /resume — пауза/возобновление\n\n"
-            "Запустите <code>newsbrief setup</code> в терминале для настройки."
+            "Это твой персональный AI-дайджест новостей.\n"
+            "Сводка приходит ежедневно в выбранное тобой время.\n\n"
+            "Используй кнопки внизу:\n"
+            "• 📰 Дайджест сейчас — запустить прямо сейчас\n"
+            "• ⚙️ Меню настроек — источники, LLM, формат, статистика\n"
+            "• 🕐 Расписание — изменить время доставки"
         )
 
     def handle_digest(self, chat_id: str) -> str:
@@ -269,6 +280,14 @@ class BotCommandHandler:
     # --- dispatch ------------------------------------------------------
 
     def dispatch(self, text: str, chat_id: str) -> Optional[str]:
+        # Map persistent keyboard button labels to commands
+        button_map = {
+            "📰 Дайджест сейчас": "/digest",
+            "⚙️ Меню настроек":    "/menu",
+            "🕐 Расписание":       "/schedule",
+        }
+        if text in button_map:
+            text = button_map[text]
         if not text or not text.startswith("/"):
             return None
         parts = text.strip().split(maxsplit=1)
@@ -309,6 +328,13 @@ class BotCommandHandler:
 
         for upd in updates:
             self._last_update_id = max(self._last_update_id, upd.get("update_id", 0))
+
+            # Handle inline keyboard callback
+            cq = upd.get("callback_query")
+            if cq:
+                self._handle_callback_query(cq)
+                continue
+
             msg = upd.get("message") or upd.get("edited_message")
             if not msg:
                 continue
@@ -318,12 +344,81 @@ class BotCommandHandler:
             if text and not text.startswith("/"):
                 fsm_reply = self.handle_text_input(chat_id, text)
                 if fsm_reply is not None:
-                    self.channel.send([fsm_reply], meta={"chat_id": chat_id})
+                    self._send_with_keyboard(chat_id, fsm_reply)
                     continue
             reply = self.dispatch(text, chat_id)
             if reply:
-                self.channel.send([reply], meta={"chat_id": chat_id})
+                self._send_with_keyboard(chat_id, reply)
         return len(updates)
+
+    def _handle_callback_query(self, cq: dict) -> None:
+        """Handle inline keyboard button press."""
+        cq_id   = cq.get("id", "")
+        data    = cq.get("data", "")
+        user_id = str(cq.get("from", {}).get("id", ""))
+        msg     = cq.get("message") or {}
+        chat_id = str(msg.get("chat", {}).get("id", user_id))
+        message_id = msg.get("message_id")
+
+        # Settings menu callbacks
+        if data.startswith("menu:"):
+            try:
+                from newsbrief.bot.menu import handle_callback
+                view = handle_callback(user_id, data, self.config, self.storage)
+            except Exception as e:
+                logger.error("[bot] menu callback failed: %s", e)
+                self.channel.answer_callback_query(cq_id, "Ошибка меню")
+                return
+            try:
+                if message_id:
+                    self.channel.edit_message_text(
+                        chat_id, int(message_id),
+                        view["text"], keyboard=view["keyboard"],
+                    )
+                else:
+                    self.channel.send_with_keyboard(chat_id, view["text"], view["keyboard"])
+                self.channel.answer_callback_query(cq_id)
+            except Exception as e:
+                logger.error("[bot] edit message failed: %s", e)
+                self.channel.answer_callback_query(cq_id, "Ошибка отображения")
+            return
+
+        # Feedback callbacks (fb:digest:idx:action) — for digest card buttons
+        from newsbrief.delivery.telegram import parse_callback_data
+        parsed = parse_callback_data(data)
+        if parsed and self.storage is not None:
+            try:
+                self.storage.execute(
+                    "INSERT INTO feedback (digest_id, article_url, rating, user_id) "
+                    "VALUES (%s, %s, %s, %s)",
+                    (parsed.get("digest_id"), f"idx:{parsed.get('idx')}",
+                     parsed.get("action"), user_id),
+                )
+            except Exception as e:
+                logger.warning("[bot] feedback save failed: %s", e)
+            ack_map = {"up": "👍", "down": "👎", "mute": "🔕 заблокировано", "save": "📌 сохранено"}
+            self.channel.answer_callback_query(cq_id, ack_map.get(parsed.get("action", ""), "OK"))
+            return
+
+        self.channel.answer_callback_query(cq_id, "Неизвестная команда")
+
+    def _send_with_keyboard(self, chat_id: str, text: str) -> None:
+        """Send message with persistent reply keyboard attached."""
+        import httpx as _httpx
+        import json as _json
+        url = f"{TELEGRAM_API_BASE}/bot{self.channel.bot_token}/sendMessage"
+        payload = {
+            "chat_id": chat_id,
+            "text": text,
+            "parse_mode": "HTML",
+            "disable_web_page_preview": True,
+            "reply_markup": _json.dumps(PERSISTENT_KEYBOARD),
+        }
+        try:
+            with _httpx.Client(timeout=30) as c:
+                c.post(url, json=payload)
+        except Exception as e:
+            logger.warning("[bot] send with keyboard failed: %s", e)
 
     def run_polling(self) -> None:
         """Blocking polling loop."""

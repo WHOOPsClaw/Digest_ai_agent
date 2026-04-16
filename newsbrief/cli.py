@@ -220,7 +220,37 @@ def _dispatch(args) -> int:
 
         sched = build_scheduler(cfg, on_build=_on_build, on_send=_on_send, storage=storage)
         sched.start()
-        logger.info("[daemon] scheduler started — Ctrl-C to exit")
+        logger.info("[daemon] scheduler started")
+
+        # Start bot polling in background thread (for /menu, /digest, etc.)
+        import threading
+        bot_thread = None
+        try:
+            from newsbrief.delivery.telegram import TelegramChannel
+            from newsbrief.delivery.bot_commands import BotCommandHandler
+
+            token = cfg.delivery.telegram.bot_token
+            chat_id = cfg.delivery.telegram.chat_id
+            if token and chat_id:
+                channel = TelegramChannel(token, chat_id)
+
+                def _on_digest_cmd():
+                    logger.info("[bot] /digest triggered")
+                    run_pipeline(cfg, storage, llm_router=None, send=True)
+
+                handler = BotCommandHandler(
+                    channel=channel, storage=storage, config=cfg,
+                    on_digest=_on_digest_cmd,
+                )
+                bot_thread = threading.Thread(target=handler.run_polling, daemon=True)
+                bot_thread.start()
+                logger.info("[daemon] bot polling started")
+            else:
+                logger.warning("[daemon] no telegram token — bot polling disabled")
+        except Exception as e:
+            logger.error("[daemon] bot polling init failed: %s", e)
+
+        logger.info("[daemon] ready — Ctrl-C to exit")
         try:
             while True:
                 _t.sleep(3600)

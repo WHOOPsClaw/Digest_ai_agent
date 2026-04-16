@@ -56,7 +56,7 @@ def test_main_menu_has_back_free_top(config, storage):
     # Main menu has no back button — it's the root
     flat = [b["text"] for row in view["keyboard"] for b in row]
     assert any("LLM" in t for t in flat)
-    assert any("Время" in t for t in flat)
+    assert any("LLM" in t for t in flat)  # main menu cleaned up
 
 
 def test_parse_menu_callback():

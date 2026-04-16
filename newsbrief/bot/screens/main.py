@@ -10,16 +10,11 @@ MAIN_TEXT = (
 )
 
 MAIN_ITEMS = [
-    ("🕐 Время доставки",       "schedule"),
     ("🤖 LLM провайдер",        "llm"),
     ("📰 Источники и темы",     "sources"),
     ("🎯 Интересы и профиль",   "profile"),
     ("🎨 Формат дайджеста",     "format"),
-    ("🔔 Уведомления",          "notify"),
     ("📊 Статистика",           "stats"),
-    ("⏸ Пауза / возобновить",  "pause"),
-    ("🔧 Диагностика",          "diag"),
-    ("❌ Сбросить",             "reset"),
 ]
 
 
@@ -35,5 +30,4 @@ class MainMenuScreen(MenuScreen):
         return {"text": MAIN_TEXT, "keyboard": keyboard}
 
     def handle(self, user_id, action, config, storage, value="", extra=""):
-        # From main, "open" navigations are handled at dispatcher level.
         return None
